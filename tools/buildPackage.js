@@ -167,6 +167,16 @@ if (isDarwin) {
 }
 cmds.push('npm run package-tor ' + torPath)
 
+// Verify ipfs binaries and bundle with Brave
+var ipfsPath
+if (isDarwin) {
+  ipfsPath = path.join(buildDir, `${appName}.app`, 'Contents', 'Resources', 'extensions', 'bin')
+} else {
+  ipfsPath = path.join(buildDir, 'resources', 'extensions', 'bin')
+}
+cmds.push('npm run package-ipfs ' + ipfsPath)
+
+
 if (isDarwin) {
   const macAppName = `${appName}.app`
   cmds.push('mkdirp ' + path.join(buildDir, macAppName, 'Contents', 'Resources', 'app.asar.unpacked', 'node_modules', 'node-anonize2-relic-emscripten'))
