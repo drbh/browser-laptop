@@ -1,61 +1,108 @@
-const execute = require('./lib/execute')
-const path = require('path')
+const request = require('request')
+const os = require('os')
 const fs = require('fs')
 const crypto = require('crypto')
+const path = require('path')
 
-/**
- * does a hash comparison on a file to a given hash
- */
+// 3rd party packages
+const tar = require('tar')
+const AdmZip = require('adm-zip')
+
+// check platform and setup fucntion for verification
+const isWindows = process.platform === 'win32'
+const isDarwin = process.platform === 'darwin'
+const isLinux = process.platform === 'linux'
+
+let platform = process.platform
+let fileExtension = '.tar.gz'
+
+let exeExtension = ''
+if (isWindows) {
+  platform = 'windows'
+  fileExtension = '.zip'
+  exeExtension = '.exe'
+}
+
 const verifyChecksum = (file, hash) => {
   const filecontent = fs.readFileSync(file)
   return hash === crypto.createHash('sha512').update(filecontent).digest('hex')
 }
 
-const isWindows = process.platform === 'win32'
-const isDarwin = process.platform === 'darwin'
-const isLinux = process.platform === 'linux'
+// set script varibles
+var uri = 'https://ipfs.io/ipns/dist.ipfs.io/go-ipfs/v0.4.17/'
+var version = '0.4.17'
 
-const ipfsS3Prefix = 'https://s3.us-east-2.amazonaws.com/demo-ipfs-binaries/'
-var ipfsPath = process.argv.slice(2)[0] // npm run package-ipfs ipfsPath
-if (ipfsPath === undefined) {
-  ipfsPath = path.join('app', 'extensions', 'bin')
+// build url for request and specific a download location
+var downloadLink = uri + 'go-ipfs_v' + version + '_' + platform + '-amd64' + fileExtension
+const tmpPath = `${os.tmpdir()}/`
+// console.log(downloadLink,"\n",
+
+console.log('Download for system')
+console.log(downloadLink)
+
+const downloadExtract = () => {
+  const ipfsBinary = tmpPath + 'go-ipfs/ipfs' + exeExtension
+  console.log(ipfsBinary)
 }
+const out = fs.createWriteStream(tmpPath + 'out')
 
-const ipfsVersion = '0.4.17'
-const braveVersion = '5'
-const exeSuffix = isWindows ? '.exe' : ''
-const ipfsURL = ipfsS3Prefix + 'ipfs-' + ipfsVersion + '-' + process.platform + '-brave-' + braveVersion + exeSuffix
+// check the checksum
+const verifyMove = function () {
+  console.log('Extracted')
+  console.log(tmpPath)
+  const ipfsBinary = tmpPath + 'go-ipfs/ipfs' + exeExtension
+  // // verify the checksum
+  let sha512IPFS
+  if (isDarwin) {
+    sha512IPFS = 'c3d18404f257fcf8674ca0afcd45bf36501624c10a8642d59d52deb850383b7f136f4849919a1a4560eee1af61705cd91dd01b3e219fb38d0582cace2b0b03d7'
+  } else if (isLinux) {
+    sha512IPFS = 'e4131388efe52d0ec0e68fa3c0110c43fc58e2a5c5bb2c72062f5b947c7622dff78cde1181029331144298f15879887c20173d0eada368e7051f4f2b5c6b41ef'
+  } else {
+    sha512IPFS = 'b9175c6f1b624ee1e5db3076f5f5859c4e5dd9abc050f75c6a4ee5ecb7ab89b8fdec965c88b851775b369bc08a8c2dfc0d84807726a4f24448eacfc0e48cdc6c'
+  }
 
-// mkdir -p doesn't work well with Windows
-if (!fs.existsSync(ipfsPath)) {
-  fs.mkdirSync(ipfsPath)
-}
-
-// sha512 below are for Ipfs
-var sha512Ipfs
-if (isDarwin) {
-  sha512Ipfs = '1a578a544ba259a9de11a63ef24f867bb7efbf7df4cd45dd08b9fff775f3b7f39eacd699c25fab22d69d4bee25bc03e9977a5cc66416792281276d584c101a5f'
-} else if (isLinux) {
-  sha512Ipfs = '193f01b75123debf90b3e35d0bc731f9e59cc06cd4e2869123f133f3a5f5c1796150b536c3cca50a9579c03f90084e5052d3ca385f807eac191f46348a57dce1'
-} else {
-  sha512Ipfs = '7ba514fdd5f184015d65bbb65c82475dc256d23078dd3f7d115b4e2b93bf73ceedfbca89eed1baf501bddcdb7f5c81f384e02836588d067c01c3f469b0664885'
-}
-
-// download the binary
-const ipfsBinary = path.join(ipfsPath, 'ipfs' + exeSuffix)
-const cmd = 'curl -o ' + ipfsBinary + ' ' + ipfsURL
-execute([cmd], '', (err) => {
-  if (err) {
-    console.error('downloading ipfs failed', err)
+  if (!verifyChecksum(ipfsBinary, sha512IPFS)) {
+    console.error('IPFS checksum verification failed')
     process.exit(1)
   }
-  // verify the checksum
-  if (!verifyChecksum(ipfsBinary, sha512Ipfs)) {
-    console.error('ipfs checksum verification failed', err)
-    process.exit(1)
+  console.log('IPFS binary checksum matches')
+  // // Move file to specified path and then change permissions
+  var binLocation = process.argv.slice(2)[0]
+  if (binLocation === undefined) {
+    binLocation = path.join('app', 'extensions', 'bin')
   }
-  console.log('ipfs binary checksum matches')
-  // make it executable
-  fs.chmodSync(ipfsBinary, 0o755)
-  console.log('done')
+  var oldPath = ipfsBinary
+  var newPath = binLocation + '/ipfs' + exeExtension
+
+  fs.rename(oldPath, newPath, function (err) {
+    if (err) throw err
+    console.log('Successfully moved to', newPath)
+    // update permissions of
+    fs.chmodSync(newPath, 0o755)
+  })
+}
+
+// make a request and pipe the output to tmp dir
+var stream = request(downloadLink).pipe(out)
+stream.on('finish', function () {
+  console.log('Downloaded')
+
+  if (fileExtension === '.zip') {
+        // unzip
+    var zip = new AdmZip(tmpPath + 'out')
+    var xtract = zip.extractAllTo('.')
+    verifyMove()
+  }
+  if (fileExtension === '.tar.gz') {
+    var gzipped = tmpPath + 'out'
+    var unziplocation = tmpPath
+    // console.log(gzipped, unziplocation)
+    // tar gunzip
+    xtract = tar.x({file: gzipped, C: unziplocation})
+    xtract.then(verifyMove)
+  }
 })
+// // build a checksum
+// const filecontent = fs.readFileSync(ipfsBinary)
+// var hash = crypto.createHash('sha512').update(filecontent).digest('hex')
+// console.log(hash)

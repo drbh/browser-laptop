@@ -41,6 +41,7 @@ const {getBraverySettingsCache, updateBraverySettingsCache} = require('./common/
 const {shouldDebugTabEvents} = require('./cmdLine')
 const {getTorSocksProxy} = require('./channel')
 const tor = require('./tor')
+const ipfs = require('./ipfs')
 
 let appStore = null
 
@@ -782,6 +783,8 @@ function initSession (ses, partition) {
   ses.userPrefs.setDefaultZoomLevel(getSetting(settings.DEFAULT_ZOOM_LEVEL) || config.zoom.defaultValue)
 }
 
+var single = true;
+
 const initPartition = (partition) => {
   const isTorPartition = partition === appConfig.tor.partition
   // Partitions can only be initialized once the app is ready
@@ -809,6 +812,18 @@ const initPartition = (partition) => {
   if (isSessionPartition(partition)) {
     options.parent_partition = ''
   }
+
+  if (single) {
+    console.log("Trying to start IPFS")
+
+    setTimeout(function(args) {
+     setupIPFS()
+     // console.log("would start ipfs")
+    }, 2000)
+    
+    single = false
+  }
+
   if (isTorPartition) {
     try {
       setupTor()
@@ -942,6 +957,54 @@ function setupTor () {
     torDaemon.start()
   })
 }
+
+// start IPFS daemon
+function setupIPFS () {
+  let IPFSInitialized = null
+  const IPFSDaemon = new ipfs.IPFSDaemon()
+  console.log("Starting IPFS binary")
+  IPFSDaemon.mystart()
+
+  // const setIPFSErrorOnTimeout = (timeout, msg) => {
+  //   IPFSInitialized = null
+  //   setTimeout(() => {
+  //     if (IPFSInitialized === null) {
+  //       appActions.onIPFSInitError(msg)
+  //     }
+  //   }, timeout)
+  // }
+  // const onIPFSSuccess = () => {
+  //   IPFSInitialized = true
+  //   appActions.onIPFSInitSuccess()
+  // }
+  // const onIPFSFail = (msg) => {
+  //   IPFSInitialized = false
+  //   appActions.onIPFSInitError(msg)
+  // }
+  // // If IPFS has not successfully initialized or thrown an error within 20s,
+  // // assume it's broken.
+  // setIPFSErrorOnTimeout(20000, 'IPFS could not start.')
+  // // Set up the IPFS daemon watcher.  (NOTE: We don't actually start
+  // // the IPFS daemon here; that happens in C++ code.  But we do talk to
+  // // its control socket.)
+  // const IPFSDaemon = new ipfs.IPFSDaemon()
+  // IPFSDaemon.setup((err) => {
+  //   if (err) {
+  //     onIPFSFail(`IPFS failed to make direcIPFSies: ${err}`)
+  //     return
+  //   }
+  //   IPFSDaemon.on('exit', () => {
+  //     onIPFSFail('The IPFS process has stopped.')
+  //   })
+  //   IPFSDaemon.on('launch', (socksAddr) => {
+  //     const version = IPFSDaemon.getVersion()
+  //   })
+  //   console.log("")
+  //   IPFSDaemon.start()
+  // })
+}
+
+// setupIPFS() 
 
 const filterableProtocols = ['http:', 'https:', 'ws:', 'wss:', 'magnet:', 'file:']
 
