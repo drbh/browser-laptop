@@ -8,7 +8,7 @@ const path = require('path')
 
 const port = 60123
 const execPath = path.join(getExtensionsPath('bin'), 'ipfs')
-const repo = '/Users/davidholtz/Desktop/ipfsRepo'
+const repo = '~/Desktop/ipfsRepo'
 
 const server = IPFSFactory.createServer({
   port: port
@@ -43,39 +43,10 @@ class IPFSDaemon extends EventEmitter {
   mystart () {
     console.log('My Start')
 
-// const { spawn } = require('child_process');
-// const ls = spawn('ls', ['-lh', '/usr']);
-
-// ls.stdout.on('data', (data) => {
-
-//   console.log(`stdout: ${data}`);
-// });
-
-// ls.stderr.on('data', (data) => {
-
-//   console.log(`stderr: ${data}`);
-// });
-
-// ls.on('close', (code) => {
-
-//   console.log(`child process exited with code ${code}`);
-// });
-
     server.start((err) => {
       if (err) { throw err }
       console.log('Server Start')
       console.log(f)
-
-      // const { spawn } = require('child_process');
-      // const child = spawn(execPath + ' ' + 'init');
-      //
-      // child.stdout.on('data', (data) => {
-      //   console.log(`child stdout:\n${data}`);
-      // });
-      //
-      // child.stderr.on('data', (data) => {
-      //   console.error(`child stderr:\n${data}`);
-      // });
 
       f.spawn(options, (err, ipfsd) => {
         if (err) { throw err }
@@ -84,7 +55,7 @@ class IPFSDaemon extends EventEmitter {
 
         console.log('http://' + ipfsd.api.apiHost + ':' + ipfsd.api.apiPort + '/webui')
 
-        ipfsd.api.id(function(err, id) {
+        ipfsd.api.id(function (err, id) {
           if (err) { throw err }
 
           // console.log(id.api.apiPort)

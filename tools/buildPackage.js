@@ -176,7 +176,6 @@ if (isDarwin) {
 }
 cmds.push('npm run package-ipfs ' + ipfsPath)
 
-
 if (isDarwin) {
   const macAppName = `${appName}.app`
   cmds.push('mkdirp ' + path.join(buildDir, macAppName, 'Contents', 'Resources', 'app.asar.unpacked', 'node_modules', 'node-anonize2-relic-emscripten'))

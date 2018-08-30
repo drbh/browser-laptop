@@ -40,10 +40,11 @@ const tmpPath = `${os.tmpdir()}/`
 console.log('Download for system')
 console.log(downloadLink)
 
-const downloadExtract = () => {
-  const ipfsBinary = tmpPath + 'go-ipfs/ipfs' + exeExtension
-  console.log(ipfsBinary)
-}
+// const downloadExtract = () => {
+//   const ipfsBinary = tmpPath + 'go-ipfs/ipfs' + exeExtension
+//   console.log(ipfsBinary)
+// }
+
 const out = fs.createWriteStream(tmpPath + 'out')
 
 // check the checksum

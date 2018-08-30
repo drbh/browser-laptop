@@ -783,7 +783,7 @@ function initSession (ses, partition) {
   ses.userPrefs.setDefaultZoomLevel(getSetting(settings.DEFAULT_ZOOM_LEVEL) || config.zoom.defaultValue)
 }
 
-var single = true;
+var single = true
 
 const initPartition = (partition) => {
   const isTorPartition = partition === appConfig.tor.partition
@@ -814,13 +814,13 @@ const initPartition = (partition) => {
   }
 
   if (single) {
-    console.log("Trying to start IPFS")
+    console.log('Trying to start IPFS')
 
-    setTimeout(function(args) {
-     setupIPFS()
+    setTimeout(function (args) {
+      setupIPFS()
      // console.log("would start ipfs")
     }, 2000)
-    
+
     single = false
   }
 
@@ -960,9 +960,9 @@ function setupTor () {
 
 // start IPFS daemon
 function setupIPFS () {
-  let IPFSInitialized = null
+  // let IPFSInitialized = null
   const IPFSDaemon = new ipfs.IPFSDaemon()
-  console.log("Starting IPFS binary")
+  console.log('Starting IPFS binary')
   IPFSDaemon.mystart()
 
   // const setIPFSErrorOnTimeout = (timeout, msg) => {
@@ -1004,7 +1004,7 @@ function setupIPFS () {
   // })
 }
 
-// setupIPFS() 
+// setupIPFS()
 
 const filterableProtocols = ['http:', 'https:', 'ws:', 'wss:', 'magnet:', 'file:']
 
