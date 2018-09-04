@@ -960,51 +960,10 @@ function setupTor () {
 
 // start IPFS daemon
 function setupIPFS () {
-  // let IPFSInitialized = null
   const IPFSDaemon = new ipfs.IPFSDaemon()
   console.log('Starting IPFS binary')
   IPFSDaemon.mystart()
-
-  // const setIPFSErrorOnTimeout = (timeout, msg) => {
-  //   IPFSInitialized = null
-  //   setTimeout(() => {
-  //     if (IPFSInitialized === null) {
-  //       appActions.onIPFSInitError(msg)
-  //     }
-  //   }, timeout)
-  // }
-  // const onIPFSSuccess = () => {
-  //   IPFSInitialized = true
-  //   appActions.onIPFSInitSuccess()
-  // }
-  // const onIPFSFail = (msg) => {
-  //   IPFSInitialized = false
-  //   appActions.onIPFSInitError(msg)
-  // }
-  // // If IPFS has not successfully initialized or thrown an error within 20s,
-  // // assume it's broken.
-  // setIPFSErrorOnTimeout(20000, 'IPFS could not start.')
-  // // Set up the IPFS daemon watcher.  (NOTE: We don't actually start
-  // // the IPFS daemon here; that happens in C++ code.  But we do talk to
-  // // its control socket.)
-  // const IPFSDaemon = new ipfs.IPFSDaemon()
-  // IPFSDaemon.setup((err) => {
-  //   if (err) {
-  //     onIPFSFail(`IPFS failed to make direcIPFSies: ${err}`)
-  //     return
-  //   }
-  //   IPFSDaemon.on('exit', () => {
-  //     onIPFSFail('The IPFS process has stopped.')
-  //   })
-  //   IPFSDaemon.on('launch', (socksAddr) => {
-  //     const version = IPFSDaemon.getVersion()
-  //   })
-  //   console.log("")
-  //   IPFSDaemon.start()
-  // })
 }
-
-// setupIPFS()
 
 const filterableProtocols = ['http:', 'https:', 'ws:', 'wss:', 'magnet:', 'file:']
 
